@@ -1,0 +1,5 @@
+Wie arbeitet das?
+es gibt eine DumpStruct Funktion und eine DumpData Funktion
+
+DumpStruct liefert eine Definition der gelieferten Daten wie sie aussehen.
+DumpData liefert die eigentlichen Daten für die Struktur. Dabei wird für jedes Feld die DumpData Funktion aufgerufen.
