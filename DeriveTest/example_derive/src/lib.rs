@@ -6,6 +6,8 @@ extern crate quote;
 use proc_macro::TokenStream;
 
 
+
+//Einstiegspunkt für das Makro
 #[proc_macro_derive(example)]
 pub fn example_derive(input: TokenStream) -> TokenStream {
     // Construct a string representation of the type definition
@@ -21,33 +23,53 @@ pub fn example_derive(input: TokenStream) -> TokenStream {
     gen.parse().unwrap()
 }
 
-fn getContentFN(token: &mut quote::Tokens, field: &syn::Field){
-    token.append("asdf");	
+
+//Für jedes Feld die Dumpfunktion aufrufen
+fn OutputDumpField(token: &mut quote::Tokens, field: &syn::Field){
+    token.append("stream.sendByte(1);");	
+    
+}
+
+fn OutputDumpRelation(token: &mut quote::Tokens, field: &syn::Field){
+    //token.append("asdf");	
+    
 }
 
 
-
+//Funktionsrumpf
 fn impl_example(ast: &syn::DeriveInput) -> quote::Tokens {
     let name = &ast.ident;
-//    println!("{:?}",ast);
-    println!("{:?}",ast.body);
+    println!("{:?}",ast);
+//    println!("{:?}",ast.body);
     let body = &ast.body;
-//    let VarDat = body;
+//  
+	let VarDat = body;
+	
+	let mut txt = quote! {};
+	
+	match body {
+		&syn::Body::Struct(ref x) => {
+			println!("\n\nStruct! {:?}\n",x); 
+			
+				
+			txt.append("impl Dumpable<");
+			txt.append(name);
+			txt.append("> for");
+			txt.append(name);
+			txt.append(" {
+			fn DumpObj(&self, stream: &outputStream){");
 
-    let mut txt = quote! {
-        impl exampleTrait for #name {
-            fn hello_world(&self) {
-                println!("Hello, World! My name is {} and i'm {:?}", stringify!(#name), self);
-            }
-        }
-    };
-
-    match body {
-	&syn::Body::Struct(ref x) => {println!("Struct! {:?}",x); for y in x.fields(){ getContentFN(&mut txt, y); }},
-	&syn::Body::Enum(ref x) => println!("Enum"),
-    };
-//    println!("{:?}",VarDat);
-//    getContentFN(txt, );
+			for y in x.fields()
+			{ 
+				OutputDumpField(&mut txt, y); 
+			}
+			
+			txt.append("}}")
+		},
+		&syn::Body::Enum(ref x) => println!("Enum"),
+	};
+	
+    
     txt
 
 }

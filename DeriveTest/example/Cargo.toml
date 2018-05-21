@@ -4,4 +4,4 @@ version = "0.1.0"
 authors = ["pi"]
 
 [dependencies]
-example_derive = {path = "../example_derive/"}
+derive_Trait = {path = "../derive_Trait/"}

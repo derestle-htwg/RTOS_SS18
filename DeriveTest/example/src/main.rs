@@ -1,15 +1,12 @@
-
-pub trait exampleTrait{
-    fn hello_world(&self);
-}
-
-
 #[macro_use]
-extern crate example_derive; 
-use example_derive::*;
+extern crate derive_Trait; 
+
+use derive_Trait::*;
+
+
 
 #[derive(Debug)]
-#[derive(example)]
+//#[derive(example)]
 struct SubCakes
 {
 	b:i32
@@ -17,14 +14,32 @@ struct SubCakes
 
 #[derive(Debug)]
 #[derive(example)]
+struct DumpableCakes
+{
+	d:i32
+}
+
+#[derive(Debug)]
+#[derive(example)]
 struct Pancakes
 {
 	a: i32,
-	c: SubCakes
+	c: SubCakes,
+	e: DumpableCakes
 } 
 
-fn main() {
-    let x = Pancakes{a:1, c:SubCakes{b:0}};
+struct dumpStream{}
 
-    x.hello_world();
+impl outputStream for dumpStream
+{
+	fn sendByte(&self, data: u8){
+		println!("Dump: {:?}", data);
+	}
+}
+
+fn main() {
+    let x = Pancakes{a:1, c:SubCakes{b:0}, e:DumpableCakes{d:3}};
+    let dumpy = dumpStream{};
+	x.DumpObj(&dumpy);
+    
 }
