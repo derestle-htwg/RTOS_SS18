@@ -3,3 +3,39 @@ es gibt eine DumpStruct Funktion und eine DumpData Funktion
 
 DumpStruct liefert eine Definition der gelieferten Daten wie sie aussehen.
 DumpData liefert die eigentlichen Daten für die Struktur. Dabei wird für jedes Feld die DumpData Funktion aufgerufen.
+
+Die Ausgabe soll direkt für Planttext verwendet werden können:
+
+
+@startuml
+digraph g {
+graph [
+rankdir = "LR"
+];
+node [
+    fontsize = "16"
+    shape = "ellipse"
+];
+edge [
+];
+
+"@10ba8" [
+    label = "<f0> Pancakes@10ba8| <f1> a: [i32] 15 | <f2> c: [SubCakes@4A963310] | <f3> e: [DumpableCakes@0x50C8]"
+    shape = "record"
+];
+"@10ba8":f2 -> "@48963310":f0 [];
+"@48963310" [
+    label = "<f0> SubCakes@4A963310| Mein Dumplog von dem \n
+    DebugFmt Trait"
+    shape = "record"
+];
+"@50C8" [
+label = "<f0> DumpableCakes@50C8| d: [i32]"
+shape = "record"
+];
+
+
+"@10ba8":f3 -> "@50C8":f0 [];
+}
+@enduml
+
