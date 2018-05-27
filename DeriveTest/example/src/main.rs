@@ -2,10 +2,10 @@
 extern crate derive_Trait; 
 
 use derive_Trait::*;
+use std::any::Any;
 
 
-
-#[derive(Debug)]
+//#[derive(Debug)]
 //#[derive(example)]
 struct SubCakes
 {
@@ -37,9 +37,31 @@ impl outputStream for dumpStream
 	}
 }
 
+
+/*
+fn dump<T: Any>(inVar: &T, stream: &outputStream) 
+{
+	let value_any = inVar as &Any;
+	match value_any.downcast_ref::<Dumpable>() {
+		Some(as_Dumpable) => {
+			as_Dumpable.DumpObj(stream);
+		}
+		None => {
+			println!("none");
+		}
+	}
+}*/
+
+
 fn main() {
     let x = Pancakes{a:1, c:SubCakes{b:0}, e:DumpableCakes{d:3}};
     let dumpy = dumpStream{};
-	x.DumpObj(&dumpy);
+	//x.DumpObj(&dumpy);
     
+    let tmp: u8 = 5;
+    
+    
+    x.DumpObj(&dumpy);
+    println!("{:?}",x);
+    //x.c.DumpObj(&dumpy);
 }

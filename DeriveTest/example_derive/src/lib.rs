@@ -7,6 +7,7 @@ use proc_macro::TokenStream;
 
 
 
+
 //Einstiegspunkt für das Makro
 #[proc_macro_derive(example)]
 pub fn example_derive(input: TokenStream) -> TokenStream {
@@ -39,7 +40,7 @@ fn OutputDumpRelation(token: &mut quote::Tokens, field: &syn::Field){
 //Funktionsrumpf
 fn impl_example(ast: &syn::DeriveInput) -> quote::Tokens {
     let name = &ast.ident;
-    println!("{:?}",ast);
+    //println!("{:?}",ast);
 //    println!("{:?}",ast.body);
     let body = &ast.body;
 //  
@@ -49,15 +50,19 @@ fn impl_example(ast: &syn::DeriveInput) -> quote::Tokens {
 	
 	match body {
 		&syn::Body::Struct(ref x) => {
-			println!("\n\nStruct! {:?}\n",x); 
+			//println!("\n\nStruct! {:?}\n",x); 
 			
 				
-			txt.append("impl Dumpable<");
+			txt.append("impl Dumpable ");
+			//txt.append(name);
+			txt.append("for");
+			//txt.append(" for ");
 			txt.append(name);
-			txt.append("> for");
-			txt.append(name);
+			//txt.append(">");
 			txt.append(" {
-			fn DumpObj(&self, stream: &outputStream){");
+			fn DumpObj(&self");
+			//txt.append(name);
+			txt.append(", stream: &outputStream){");
 
 			for y in x.fields()
 			{ 
@@ -69,7 +74,7 @@ fn impl_example(ast: &syn::DeriveInput) -> quote::Tokens {
 		&syn::Body::Enum(ref x) => println!("Enum"),
 	};
 	
-    
+    println!("{}",txt);
     txt
 
 }
