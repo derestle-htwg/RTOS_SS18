@@ -1,0 +1,19 @@
+language: rust
+
+rust:
+  - nightly-2017-04-19
+  
+before_script:
+  - rustup component add rust-src
+  - (test -x $HOME/.cargo/bin/xargo || cargo install xargo)
+
+script:
+  - make build
+
+addons:
+  apt:
+    packages:
+      - nasm
+      - libssh2-1
+      - xorriso
+      - qemu
