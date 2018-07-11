@@ -5,7 +5,8 @@ extern crate quote;
 
 use proc_macro::TokenStream;
 
-
+use std::io;
+use std::io::prelude::*;
 
 
 //Einstiegspunkt für das Makro
@@ -39,42 +40,30 @@ fn OutputDumpRelation(token: &mut quote::Tokens, field: &syn::Field){
 
 //Funktionsrumpf
 fn impl_example(ast: &syn::DeriveInput) -> quote::Tokens {
-    let name = &ast.ident;
-    //println!("{:?}",ast);
-//    println!("{:?}",ast.body);
+
+    println!("{:?}",ast);
     let body = &ast.body;
-//  
+    let name = &ast.ident;
 	let VarDat = body;
-	
 	let mut txt = quote! {};
-	
 	match body {
 		&syn::Body::Struct(ref x) => {
-			//println!("\n\nStruct! {:?}\n",x); 
-			
-				
 			txt.append("impl Dumpable ");
-			//txt.append(name);
 			txt.append("for");
-			//txt.append(" for ");
 			txt.append(name);
-			//txt.append(">");
-			txt.append(" {
-			fn DumpObj(&self");
-			//txt.append(name);
+			txt.append(" { fn DumpObj(&self");
 			txt.append(", stream: &outputStream){");
-
 			for y in x.fields()
 			{ 
 				OutputDumpField(&mut txt, y); 
 			}
-			
 			txt.append("}}")
 		},
-		&syn::Body::Enum(ref x) => println!("Enum"),
+		&syn::Body::Enum(ref x) => panic!("Enums nicht unterstützt in MyDerive"),
 	};
-	
-    println!("{}",txt);
+        let stdin = io::stdin();
+    for line in stdin.lock().lines() {
+        println!("{}", line.unwrap());
+    }
     txt
-
 }

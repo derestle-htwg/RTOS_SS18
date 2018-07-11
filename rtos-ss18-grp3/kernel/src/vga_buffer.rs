@@ -1,4 +1,4 @@
-
+extern crate core;
 use spin::Mutex;
 
 lazy_static! {
@@ -116,6 +116,7 @@ impl Writer {
         }
     }
 }
+
 use core::fmt;
 
 impl fmt::Write for Writer {

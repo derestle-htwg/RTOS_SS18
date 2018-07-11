@@ -5,8 +5,7 @@ use derive_Trait::*;
 use std::any::Any;
 
 
-//#[derive(Debug)]
-//#[derive(example)]
+#[derive(Debug)]
 struct SubCakes
 {
 	b:i32
@@ -14,18 +13,19 @@ struct SubCakes
 
 #[derive(Debug)]
 #[derive(example)]
-struct DumpableCakes
+struct DerivedCakes
 {
 	d:i32
 }
 
+#[MyAttribute]
 #[derive(Debug)]
 #[derive(example)]
 struct Pancakes
 {
 	a: i32,
 	c: SubCakes,
-	e: DumpableCakes
+	e: DerivedCakes
 } 
 
 struct dumpStream{}
@@ -54,7 +54,7 @@ fn dump<T: Any>(inVar: &T, stream: &outputStream)
 
 
 fn main() {
-    let x = Pancakes{a:1, c:SubCakes{b:0}, e:DumpableCakes{d:3}};
+    let x = Pancakes{a:1, c:SubCakes{b:0}, e:DerivedCakes{d:3}};
     let dumpy = dumpStream{};
 	//x.DumpObj(&dumpy);
     
