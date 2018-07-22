@@ -1,15 +1,19 @@
+#![feature(abi_x86_interrupt)]
+#![feature(const_let)]
 #![feature(lang_items)] // required for defining the panic handler
 #![feature(global_allocator)]
 #![feature(const_fn)]
 #![feature(alloc)]
 #![feature(allocator_api)]
 #![feature(panic_implementation)]
-#![no_main] // disable all Rust-level entry points
 #![no_std]
-
+#![no_main] // disable all Rust-level entry points
 // src/main.rs
 extern crate volatile;
+extern crate x86_64;
+
 #[macro_use]
+
 mod vga_buffer;
 mod VMM;
 use core::fmt::Arguments;
@@ -17,8 +21,9 @@ use vga_buffer::*;
 extern crate spin;
 #[macro_use]
 extern crate lazy_static;
-
-
+extern crate multiboot2;
+mod bootInformation;
+mod irq;
 
 
 
@@ -26,20 +31,39 @@ use core::panic::PanicInfo;
 #[no_mangle]
 #[panic_implementation]
 fn panic(_info: &PanicInfo) -> ! {
+	println!("Panic :{:?}", _info);
     loop {}
 }
 
 
-static HELLO: &[u8] = b"Hello World!";
+pub unsafe fn exit_qemu() -> ! {
+    use x86_64::instructions::port::Port;
 
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
-println!("Hello World{}", "!");
-	
-	loop {}
+    let mut port = Port::<u32>::new(0xf4);
+    port.write(0);
+    loop{}
 }
 
+#[no_mangle]
+pub extern "C" fn _start(bootinfo: &u64) -> ! {
+	println!("Hello World!");
+	bootInformation::parse(bootinfo);
+	
+	
+	
+	let a = 0;
+	let b = 1;
+	
+		
+	irq::initIRQs();
+	
+	println!("{}", unsafe{*(0x1234567812345678 as *const u8)});
+	
+	unsafe {exit_qemu()}
+	
+	
 
+}
 
 
 //kopiert und angepasst von 

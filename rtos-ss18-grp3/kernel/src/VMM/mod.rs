@@ -2,7 +2,7 @@
 
 use volatile::Volatile;
 pub mod LLFrameAllocator;
-use self::LLFrameAllocator::*;
+pub use self::LLFrameAllocator::*;
 pub mod allocator;
 
 #[derive(Clone, Copy)]

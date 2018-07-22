@@ -1,4 +1,4 @@
-extern kmain
+extern _start
 
 global start
 
@@ -6,41 +6,33 @@ section .text
 bits 32
 start:
     mov esp, stack_top
+    
+    cld
+    xor eax,eax
+    mov	edi,0x1000 ; Direct Mapped PML4 auf 0x1000
+    mov	ecx, 2*1024; 2*1024*4 = 8 kbyte auf 0 setzen
+    rep stosd
+    mov	eax,0x2013 ; PDP@ 0x2000 + PageCacheDisabled + Writeable + Present
+    mov [0x1000],eax
+    mov eax, 0x1013
+    mov [0x1FF8],eax; Selbsreferenzierung
+
+	mov	ecx, 512; 512 Einträge
+	mov eax, 0x193 ; Global + 1 + PageCacheDisabled + WriteThrough + Present
+	xor	edx,edx
+	mov	edi,0x2000
+fillPDP:
+	mov	[edi],eax
+	mov	[edi+4],edx
+	add	edi,8
+	add	eax,0x40000000
+	adc edx,0
+    loop fillPDP
+    
     mov edi, ebx       ; move Multiboot info pointer to edi
-
-    ; Point the first entry of the level 4 page table to the first entry in the
-    ; p3 table
-    mov eax, p3_table 			; copy entries from first third-level page table into eax register
-    or eax, 0b11 			; do or with eax register and 0b11 and write it to eax
-    mov dword [p4_table + 0], eax	; move eax to position where p4_table points to 
-
-    ; Point the first entry of the level 3 page table to the first entry in the
-    ; p2 table
-    mov eax, p2_table
-    or eax, 0b11
-    mov dword [p3_table + 0], eax
- 
-    ; point each page table level two entry to a page
-    mov ecx, 0         ; counter variable
-
-set_up_page_tables:
-    ; map P4 table recursively
-    mov eax, p4_table
-    or eax, 0b11 ; present + writable
-    mov [p4_table + 511 * 8], eax
-
-.map_p2_table:
-    mov eax, 0x200000	; 2MiB
-    mul ecx
-    or eax, 0b10000011
-    mov [p2_table + ecx * 8], eax
-
-    inc ecx
-    cmp ecx, 512
-    jne .map_p2_table
-
+    
     ; move page table address to cr3
-    mov eax, p4_table
+    mov eax, 0x1000
     mov cr3, eax
 
     ; enable PAE
@@ -70,7 +62,7 @@ set_up_page_tables:
     mov es, ax
 
     ; jump to long mode!
-    jmp gdt64.code:kmain
+    jmp gdt64.code:_start
 
     mov word [0xb8000], 0x0248 ; H
     mov word [0xb8002], 0x0265 ; e
@@ -92,7 +84,7 @@ section .bss ;block started by symbol - entries automatically set to zero by lin
 
 align 4096 ;makes sure that adresses are aligned correct
 
-p4_table:
+p4_table: 
     resb 4096 ;directive to reservate bytes
 p3_table:
     resb 4096 ;directive to reservate bytes

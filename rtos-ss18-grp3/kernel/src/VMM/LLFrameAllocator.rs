@@ -1,8 +1,44 @@
 
+
 pub struct frame
 {
-	pub next: Option<&'static mut frame>,
+	pub next: &'static mut frame,
 	pub me: u64,
+}
+
+impl frame
+{
+	pub fn take(&mut self) -> &'static mut frame
+	{
+		unsafe { 
+			let myPtr: *mut frame = self as *mut frame;
+			&mut *myPtr
+		}
+	}
+	
+	
+	pub fn new(PhysicalAddress: u64) -> &'static mut frame
+	{
+		
+		
+		let myFrame = unsafe { &mut *(PhysicalAddress as *mut frame) };
+		
+		if(!myFrame.isNull())
+		{
+			myFrame.next = unsafe { &mut *(0 as *mut frame) };
+		
+			myFrame.me = PhysicalAddress;
+		}
+		myFrame
+		
+	}
+
+	pub fn isNull(&self) -> bool
+	{
+		unsafe { let addr: usize = self as *const frame as usize; addr <= 1}
+	}
+	
+	
 }
 use spin::Mutex;
 use core::ops::DerefMut;
@@ -11,67 +47,68 @@ use core::ops::DerefMut;
 
 struct llFields
 {
-	llStart: Option<&'static mut frame>,
-	llEnd: Option<&'static mut frame>
+	llStart: &'static mut frame,
+	llEnd: &'static mut frame
 }
 
-static myLlFields: Mutex<llFields> =  Mutex::new( llFields {llStart: None, llEnd: None});
 
-
-impl frame
-{
-	pub fn new(PhysicalAddress: u64) -> &'static mut frame
-	{
-		let myFrame = unsafe { &mut *(PhysicalAddress as *mut frame) };
-		myFrame.next = None;
-		myFrame.me = PhysicalAddress;
-		myFrame
-	}
+//Frames dürfen nicht auf 0 zeigen weil das sonst von dem Option als None Interpretiert wird und damit ein Crash passiert
+lazy_static! {
+   static ref myLlFields: Mutex<llFields> = { Mutex::new(llFields{ llStart: frame::new(1), llEnd: frame::new(1) })};
 }
+      
 
 pub fn InsertMemoryRange(Begin: u64, End: u64)
 {
+	let mut start: u64 = Begin;
+	let mut myEnd: u64 = End;
+	start = (start + 0xFFF) & 0xFFFFFFFFFFFFF000; //Aufrunden
+	myEnd = (myEnd+1) & 0xFFFFFFFFFFFFF000; // +1 und Abrunden, damit z.B. aus 2FFF 3000 als Ende wird
+	
+	while start < myEnd //kleiner, nicht kleinergleich damit letzte Seite nicht hinzugefügt wird.
+	{
+		//Check ob im kernel oder andere wichtige Speicherbereiche
+		if(start >= 0) & (start < 0x3000)
+		{ 
+			start = start + 0x1000;
+			continue 
+		}
 		
+		appendFrame(frame::new(start));
+		start = start + 0x1000;
+	}
 }
 
-pub fn appendFrame(frm: &mut frame)
+pub fn appendFrame(frm: &'static mut frame)
 {
+	let mut myMut = &myLlFields;
 	
+	let mut unlockedLlFields = myMut.lock();
+	
+	frm.next = unlockedLlFields.llStart.take();
+	unlockedLlFields.llStart = frm.take();
 }
 
 pub fn getFrame() -> Option<&'static mut frame>
 {
 	let mut unlockedLlFields = myLlFields.lock();
 	
-	
-	let mut newLLStart: Option<&'static mut frame> = None;
-	let mut myRetVal: Option<&'static mut frame> = None;
-	
-	match unlockedLlFields.llStart {
-		Some(ref mut x) => x.me = 0, 
-		None => (),
-	};
-	
-	//mem::replace(&mut unlockedLlFields.llStart, &mut newLLStart);
-
-		
-	/*unsafe{
-		let &mut src = &(unlockedLlFields.llStart);
-		src = newLLStart;
-		//unlockedLlFields.llStart;
-	}*/
+	let mut newLLStart: &'static mut frame = frame::new(0);
+	let mut myRetVal: &'static mut frame = frame::new(0);
 	
 	
 	
-	/*
-	match unlockedLlFields.llStart {
-		Some(ref mut frm) => {
-			myRetVal = Some(frm);
-			unlockedLlFields.llStart = frm.next
-			
-		},
-		None => panic!("Kein freier Block mehr vorhanden"),
-	}*/
 	
-	myRetVal
+	//take trickst das borrow checker system aus!
+	//leider notwendig für verkettete Listen auf Speicherseiten die sich selber referenzieren.
+	myRetVal = unlockedLlFields.llStart.take();
+	
+	
+	if myRetVal.isNull() {
+		None
+	} else {
+		unlockedLlFields.llStart = myRetVal.next.take();
+		Some(myRetVal)
+	}
+	
 }
