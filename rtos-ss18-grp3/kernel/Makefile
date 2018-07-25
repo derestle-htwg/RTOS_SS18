@@ -5,12 +5,12 @@ build: target/kernel.bin
 .PHONY: clean cargo
 
 debug: target/os.iso
-	qemu-system-x86_64 -cdrom target/os.iso -monitor telnet:127.0.0.1:1235,server,nowait -s -S -device isa-debug-exit,iobase=0xf4,iosize=0x04& 
+	qemu-system-x86_64 -cdrom target/os.iso -monitor telnet:127.0.0.1:1235,server,nowait -s -S -device isa-debug-exit,iobase=0xf4,iosize=0x04 -D qemu.loig&
 	objdump -d target/kernel.bin > kernelDisasm
 	(echo "disconnect") | gdb --init-command ./gdbscript1
 	gdb --init-command ./gdbscript2
 
-cargo: 
+cargo:
 	cargo xbuild --target x86_64-blog_os.json
 
 run: target/os.iso

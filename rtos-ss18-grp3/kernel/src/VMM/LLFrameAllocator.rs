@@ -68,7 +68,7 @@ pub fn InsertMemoryRange(Begin: u64, End: u64)
 	while start < myEnd //kleiner, nicht kleinergleich damit letzte Seite nicht hinzugefügt wird.
 	{
 		//Check ob im kernel oder andere wichtige Speicherbereiche
-		if(start >= 0) & (start < 0x3000)
+		if(start >= 0) & (start <= 0x4000)
 		{ 
 			start = start + 0x1000;
 			continue 

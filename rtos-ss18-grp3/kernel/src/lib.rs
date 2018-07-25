@@ -55,8 +55,47 @@ pub extern "C" fn _start(bootinfo: &u64) -> ! {
 	let b = 1;
 	
 		
-	irq::initIRQs();
+	irq::initIDT();
 	
+	//TSS
+	let mut myTSS : &mut x86_64::structures::tss::TaskStateSegment = unsafe { &mut *(0xF00 as *mut x86_64::structures::tss::TaskStateSegment)};
+	
+	myTSS.privilege_stack_table[0] = x86_64::VirtAddr::new(0x200000);
+	myTSS.privilege_stack_table[1] = x86_64::VirtAddr::new(0x210000);
+	myTSS.privilege_stack_table[2] = x86_64::VirtAddr::new(0x220000);
+	myTSS.interrupt_stack_table[0] = x86_64::VirtAddr::new(0x230000);
+	myTSS.interrupt_stack_table[1] = x86_64::VirtAddr::new(0x240000);
+	myTSS.interrupt_stack_table[2] = x86_64::VirtAddr::new(0x250000);
+	myTSS.interrupt_stack_table[3] = x86_64::VirtAddr::new(0x260000);
+	myTSS.interrupt_stack_table[4] = x86_64::VirtAddr::new(0x270000);
+	myTSS.interrupt_stack_table[5] = x86_64::VirtAddr::new(0x280000);
+	myTSS.interrupt_stack_table[6] = x86_64::VirtAddr::new(0x290000);
+	
+	
+	let mut myGDT : &'static mut [u64; 8] = unsafe { &mut  *(0xFC0 as *mut [u64; 8])};
+	myGDT[0] = 0;
+	myGDT[1] = (1<<53) + (1<<47) + (1<<44) + (1<<43) + (1<<42); //Code 64
+	myGDT[2] = (1<<47) + (1<<44);
+	myGDT[3] = 0;
+	myGDT[4] = 0;
+	myGDT[5] = 128 + (0xF00<<16) + (9 << 40) + (1<<47);
+	myGDT[6] = 0;
+	myGDT[7] = 0;
+	
+	let mut myGDTPtr : &mut x86_64::instructions::tables::DescriptorTablePointer = unsafe { &mut *(0xFB0 as *mut x86_64::instructions::tables::DescriptorTablePointer)};//x86_64::instructions::tables::DescriptorTablePointer
+	myGDTPtr.limit = 0x40;
+	myGDTPtr.base = 0xFC0;
+	
+	let mut myIDTPtr : &mut x86_64::instructions::tables::DescriptorTablePointer = unsafe { &mut *(0xFA0 as *mut x86_64::instructions::tables::DescriptorTablePointer)};//x86_64::instructions::tables::DescriptorTablePointer
+	myIDTPtr.limit = 0x1000;
+	myIDTPtr.base = 0x4000;
+	
+	unsafe 
+	{
+		x86_64::instructions::tables::lgdt(&myGDTPtr);
+		
+		x86_64::instructions::tables::load_tss(x86_64::structures::gdt::SegmentSelector::new(5,  x86_64::PrivilegeLevel::Ring0));
+	}
 	println!("{}", unsafe{*(0x1234567812345678 as *const u8)});
 	
 	unsafe {exit_qemu()}
@@ -67,7 +106,8 @@ pub extern "C" fn _start(bootinfo: &u64) -> ! {
 
 
 //kopiert und angepasst von 
-//https://source.that.world/source/rux/browse/master/selfalloc/src/lib.rs
+//https://source.that.wo
+
 
 
 
