@@ -3,5 +3,6 @@ target remote 127.0.0.1:1234
 symbol-file target/kernel.bin
 b start
 b _start
+b *(0x103000)
 c
 

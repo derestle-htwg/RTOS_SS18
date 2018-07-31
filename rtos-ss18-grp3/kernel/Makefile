@@ -4,8 +4,11 @@ build: target/kernel.bin
 
 .PHONY: clean cargo
 
+src/asm/APReset: src/asm/APReset.asm
+	nasm -f bin src/asm/APReset.asm -o src/asm/APReset
+
 debug: target/os.iso
-	qemu-system-x86_64 -cdrom target/os.iso -monitor telnet:127.0.0.1:1235,server,nowait -s -S -device isa-debug-exit,iobase=0xf4,iosize=0x04 -D qemu.loig&
+	qemu-system-x86_64 -smp cpus=4 -cdrom target/os.iso -monitor telnet:127.0.0.1:1235,server,nowait -s -S -device isa-debug-exit,iobase=0xf4,iosize=0x04 -D qemu.loig&
 	objdump -d target/kernel.bin > kernelDisasm
 	(echo "disconnect") | gdb --init-command ./gdbscript1
 	gdb --init-command ./gdbscript2
@@ -14,13 +17,13 @@ cargo:
 	cargo xbuild --target x86_64-blog_os.json
 
 run: target/os.iso
-	qemu-system-x86_64 -cdrom target/os.iso -device isa-debug-exit,iobase=0xf4,iosize=0x04
+	qemu-system-x86_64 -smp cpus=4 -cdrom target/os.iso -device isa-debug-exit,iobase=0xf4,iosize=0x04
 
 target/multiboot_header.o: src/asm/multiboot_header.asm
 	mkdir -p target
 	nasm -f elf64 src/asm/multiboot_header.asm -o target/multiboot_header.o
 
-target/boot.o: src/asm/boot.asm
+target/boot.o: src/asm/boot.asm src/asm/APReset
 	mkdir -p target
 	nasm -f elf64 src/asm/boot.asm -o target/boot.o
 

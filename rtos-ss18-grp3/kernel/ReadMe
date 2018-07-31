@@ -1,7 +1,11 @@
 Speicherlayout:
-0x000 - 0xCFF: Resetcode für AP-Prozessoren
-0xD00 - 0xEFF: IDT für 32 Ints
+0x000 - 0xCEF: Resetcode für AP-Prozessoren
+0xCF0 - 0xCF7: Stackpointer für AP-Boot CPUs
+0xCF8 - 0xCFF: Sprungpunkt für AP-Boot CPUs 
 0xF00 - 0xF7F: TSS
 0xF80 - 0xF8F: IDTPtr
 0xF90 - 0xF9F: GDTPtr
 0xFC0 - 0xFFF: GDT
+0x1000 - 0x1FFF: Direktmapping ersten 512 GB
+0x2000 - 0x2FFF: Roottabelle für Direktmapping und Selbstreferenz
+0x4000 - 0x4FFF: IDT für alle 256 IRQs

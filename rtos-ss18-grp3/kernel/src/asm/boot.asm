@@ -1,4 +1,4 @@
-extern _start
+	extern _start
 
 global start
 
@@ -60,9 +60,26 @@ fillPDP:
     mov ss, ax
     mov ds, ax
     mov es, ax
+	jmp gdt64.code:longmodeActive
+
+bits 64
+longmodeActive:
+
+
+	mov	rcx, APStartblock_End
+	mov	rbx, resetVector
+	mov	rdx,0
+APStartcodeCopy:
+	mov	al, byte [rbx]
+	
+	mov byte [rdx],al
+	inc rdx
+	inc rbx
+	cmp rcx,rbx
+	jne APStartcodeCopy
 
     ; jump to long mode!
-    jmp gdt64.code:_start
+    jmp _start
 
     mov word [0xb8000], 0x0248 ; H
     mov word [0xb8002], 0x0265 ; e
@@ -105,11 +122,7 @@ gdt64:
     dw .pointer - gdt64 - 1
     dq gdt64
 
-section .text
-bits 64
-long_mode_start:
+resetVector:
+incbin "src/asm/APReset"
+APStartblock_End:
 
-    mov rax, 0x2f592f412f4b2f4f
-    mov qword [0xb8000], rax
-
-    hlt

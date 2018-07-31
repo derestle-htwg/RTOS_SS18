@@ -24,6 +24,7 @@ extern crate lazy_static;
 extern crate multiboot2;
 mod bootInformation;
 mod irq;
+mod apic;
 
 
 
@@ -75,11 +76,11 @@ pub extern "C" fn _start(bootinfo: &u64) -> ! {
 	let mut myGDT : &'static mut [u64; 8] = unsafe { &mut  *(0xFC0 as *mut [u64; 8])};
 	myGDT[0] = 0;
 	myGDT[1] = (1<<53) + (1<<47) + (1<<44) + (1<<43) + (1<<42); //Code 64
-	myGDT[2] = (1<<47) + (1<<44);
-	myGDT[3] = 0;
-	myGDT[4] = 0;
-	myGDT[5] = 128 + (0xF00<<16) + (9 << 40) + (1<<47);
-	myGDT[6] = 0;
+	myGDT[2] = (1<<47) + (1<<44) + (1<<41); //WP muss gesetzt sein damit im 64 bit modus das SS Reg gesetzt werden kann. sonst EXception
+	myGDT[3] = (1<<55) + (1<<54) + (0xF << 48) + (1 << 47) + (1 << 44) + (1 << 43) + (1 << 41) + (0xFFFF); //32Bit CS:
+	myGDT[4] = (1<<55) + (1<<54) + (0xF << 48) + (1 << 47) + (1 << 44) + (1 << 41) + (0xFFFF); //32Bit DS: G(4Kb) + 32 Bit + Segementlimit 19:16 + Present + Static 1 + Writeable + Segmentlimit 15:0
+	myGDT[5] = 128 + (0xF00<<16) + (9 << 40) + (1<<47); //TSS
+	myGDT[6] = 0;//Muss null sein, Extension von 5
 	myGDT[7] = 0;
 	
 	let mut myGDTPtr : &mut x86_64::instructions::tables::DescriptorTablePointer = unsafe { &mut *(0xFB0 as *mut x86_64::instructions::tables::DescriptorTablePointer)};//x86_64::instructions::tables::DescriptorTablePointer
@@ -96,6 +97,8 @@ pub extern "C" fn _start(bootinfo: &u64) -> ! {
 		
 		x86_64::instructions::tables::load_tss(x86_64::structures::gdt::SegmentSelector::new(5,  x86_64::PrivilegeLevel::Ring0));
 	}
+	
+	apic::initSMP();
 	println!("{}", unsafe{*(0x1234567812345678 as *const u8)});
 	
 	unsafe {exit_qemu()}
