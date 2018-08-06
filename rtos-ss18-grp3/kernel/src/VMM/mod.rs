@@ -1,19 +1,16 @@
 //Mod VMM
 
-use volatile::Volatile;
 pub mod LLFrameAllocator;
 pub use self::LLFrameAllocator::*;
 pub mod allocator;
+pub use self::allocator::*;
 
 #[derive(Clone, Copy)]
 #[repr(C)]
-struct PagetableEntry
+pub struct PagetableEntry
 {
     data: u64 
 }
-
-
-
 
 impl PagetableEntry
 {
@@ -115,56 +112,56 @@ impl PagetableEntry
 }
 #[derive(Clone, Copy)]
 #[repr(C)]
-struct PML4E
+pub struct PML4E
 {
     entry: PagetableEntry
 }
 
 #[derive(Clone, Copy)]
 #[repr(C)]
-struct PML4 
+pub struct PML4 
 {
     entries: [PML4E; 512]
 }
 
 #[derive(Clone, Copy)]
 #[repr(C)]
-struct PML3E
+pub struct PML3E
 {
     entry: PagetableEntry
 }
 
 #[derive(Clone, Copy)]
 #[repr(C)]
-struct PML3
+pub struct PML3
 {
     entries: [PML3E; 512]
 }
 
 #[derive(Clone, Copy)]
 #[repr(C)]
-struct PML2E
+pub struct PML2E
 {
     entry: PagetableEntry
 }
 
 #[derive(Clone, Copy)]
 #[repr(C)]
-struct PML2
+pub struct PML2
 {
     entries: [PML2E; 512]
 }
 
 #[derive(Clone, Copy)]
 #[repr(C)]
-struct PML1E
+pub struct PML1E
 {
     entry: PagetableEntry
 }
 
 #[derive(Clone, Copy)]
 #[repr(C)]
-struct PML1
+pub struct PML1
 {
     entries: [PML1E; 512]
 }
@@ -193,10 +190,57 @@ impl Default for PML4
 {
 	fn default() -> PML4 { PML4 {entries: [PML4E { ..Default::default() }; 512] } }
 }
+impl PML4
+{	
+	fn getPML3(&self, index: usize) -> Option<&mut PML3> 
+	{
+		if self.entries[index].entry.getPresent()
+		{
+			let pa = self.entries[index].entry.getPA(); 
+			Some( unsafe { &mut *(pa as *mut PML3) } )
+		}
+		else
+		{
+			None
+		}
+	}
+	
+	pub fn zero(&mut self)
+	{
+		for i in 0..512
+		{
+			self.entries[i].entry.data = 0;
+		}
+	}
+}
 
 impl Default for PML3
 {
 	fn default() -> PML3 { PML3 {entries: [PML3E { ..Default::default() }; 512] } }
+}
+
+impl PML3
+{	
+	fn getPML2(&self, index: usize) -> Option<&mut PML2> 
+	{
+		if self.entries[index].entry.getPresent()
+		{
+			let pa = self.entries[index].entry.getPA(); 
+			Some( unsafe { &mut *(pa as *mut PML2) } )
+		}
+		else
+		{
+			None
+		}
+	}
+	
+	pub fn zero(&mut self)
+	{
+		for i in 0..512
+		{
+			self.entries[i].entry.data = 0;
+		}
+	}
 }
 
 impl Default for PML2
@@ -204,8 +248,55 @@ impl Default for PML2
 	fn default() -> PML2 { PML2 {entries: [PML2E { ..Default::default() }; 512] } }
 }
 
+impl PML2{
+	pub fn getPML1(&self, index: usize) -> Option<&mut PML1> 
+	{
+		if self.entries[index].entry.getPresent()
+		{
+			let pa = self.entries[index].entry.getPA(); 
+			Some( unsafe { &mut *(pa as *mut PML1) } )
+		}
+		else
+		{
+			None
+		}
+	}
+	
+	pub fn zero(&mut self)
+	{
+		for i in 0..512
+		{
+			self.entries[i].entry.data = 0;
+		}
+	}
+}
+
 impl Default for PML1
 {
 	fn default() -> PML1 { PML1 {entries: [PML1E { ..Default::default() }; 512] } }
+}
+
+impl PML1
+{
+	pub fn getPML1E(&self, index: usize) -> Option<&mut PML1E> 
+	{
+		if self.entries[index].entry.getPresent()
+		{
+			let pa = self.entries[index].entry.getPA(); 
+			Some( unsafe { &mut *(pa as *mut PML1E) } )
+		}
+		else
+		{
+			None
+		}
+	}
+	
+	pub fn zero(&mut self)
+	{
+		for i in 0..512
+		{
+			self.entries[i].entry.data = 0;
+		}
+	}
 }
 

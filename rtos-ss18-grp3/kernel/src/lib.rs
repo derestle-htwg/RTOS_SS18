@@ -8,6 +8,7 @@
 #![feature(panic_implementation)]
 #![no_std]
 #![no_main] // disable all Rust-level entry points
+#![feature(asm)]
 // src/main.rs
 extern crate volatile;
 extern crate x86_64;
@@ -25,6 +26,7 @@ extern crate multiboot2;
 mod bootInformation;
 mod irq;
 mod apic;
+mod scheduler;
 
 
 
@@ -100,6 +102,7 @@ pub extern "C" fn _start(bootinfo: &u64) -> ! {
 	
 	apic::initSMP();
 	println!("{}", unsafe{*(0x1234567812345678 as *const u8)});
+	
 	
 	unsafe {exit_qemu()}
 	
