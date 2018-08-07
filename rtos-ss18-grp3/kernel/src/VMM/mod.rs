@@ -9,22 +9,22 @@ pub use self::allocator::*;
 #[repr(C)]
 pub struct PagetableEntry
 {
-    data: u64 
+    pub data: u64 
 }
 
 impl PagetableEntry
 {
-    fn getPA(&self) -> u64 {
+    pub fn getPA(&self) -> u64 {
         self.data & 0x000FFFFFFFFFF000
     }
-    fn setPA(&mut self, pa: u64) {
+    pub fn setPA(&mut self, pa: u64) {
         self.data = (self.data & 0xFFF0000000000FFF) | pa;
     }
-    fn getBit(&self, Bit: u8) -> bool{
+    pub fn getBit(&self, Bit: u8) -> bool{
         (self.data & (1 << Bit)) != 0
     }
 
-    fn setBit(&mut self, Bit: u8, value: bool){
+    pub fn setBit(&mut self, Bit: u8, value: bool){
         let mut mask: u64;
         mask = 1 << Bit;
         if(value)
@@ -38,70 +38,70 @@ impl PagetableEntry
         }
     }
 
-    fn getPresent(&self) -> bool {
+    pub fn getPresent(&self) -> bool {
         self.getBit(0)
     }
-    fn setPresent(&mut self, present: bool){
+    pub fn setPresent(&mut self, present: bool){
         self.setBit(0, present)
     }
 
-    fn getWriteable(&self) -> bool {
+    pub fn getWriteable(&self) -> bool {
         self.getBit(1)
     }
-    fn setWriteable(&mut self, writeable: bool){
+    pub fn setWriteable(&mut self, writeable: bool){
         self.setBit(1, writeable)
     }
-    fn getUser(&self) -> bool {
+    pub fn getUser(&self) -> bool {
         self.getBit(2)
     }
-    fn setUser(&mut self, user: bool){
+    pub fn setUser(&mut self, user: bool){
         self.setBit(2, user)
     }
-    fn getWriteThrough(&self) -> bool {
+    pub fn getWriteThrough(&self) -> bool {
         self.getBit(3)
     }
-    fn setWriteThrough(&mut self, wt: bool){
+    pub fn setWriteThrough(&mut self, wt: bool){
         self.setBit(3, wt)
     }
-    fn getCacheDisable(&self) -> bool {
+    pub fn getCacheDisable(&self) -> bool {
         self.getBit(4)
     }
-    fn setCacheDisable(&mut self, cd: bool){
+    pub fn setCacheDisable(&mut self, cd: bool){
         self.setBit(4, cd)
     }
-    fn getAccessed(&self) -> bool {
+    pub fn getAccessed(&self) -> bool {
         self.getBit(5)
     }
-    fn setAccessed(&mut self, a: bool){
+    pub fn setAccessed(&mut self, a: bool){
         self.setBit(5, a)
     }
 
-    fn getDirty(&self) -> bool {
+    pub fn getDirty(&self) -> bool {
         self.getBit(6)
     }
-    fn setDirty(&mut self, dirty: bool){
+    pub fn setDirty(&mut self, dirty: bool){
         self.setBit(6, dirty)
     }
 
-    fn getPAT(&self) -> bool {
+    pub fn getPAT(&self) -> bool {
         self.getBit(7)
     }
-    fn setPAT(&mut self, PAT3: bool){
+    pub fn setPAT(&mut self, PAT3: bool){
         self.setBit(7, PAT3)
     }
 
-    fn getGlobal(&self) -> bool {
+    pub fn getGlobal(&self) -> bool {
         self.getBit(8)
     }
-    fn setGlobal(&mut self, global: bool){
+    pub fn setGlobal(&mut self, global: bool){
         self.setBit(8, global)
     }
 
-    fn getAvailable(&self) -> u64{
+    pub fn getAvailable(&self) -> u64{
         (self.data & (0x7 << 9)) >> 9
     }
 
-    fn setAvailable(&mut self, value: u64){
+    pub fn setAvailable(&mut self, value: u64){
         let mut mask: u64;
         mask = 7 << 9;
         mask = !mask;
@@ -114,14 +114,14 @@ impl PagetableEntry
 #[repr(C)]
 pub struct PML4E
 {
-    entry: PagetableEntry
+    pub entry: PagetableEntry
 }
 
 #[derive(Clone, Copy)]
 #[repr(C)]
 pub struct PML4 
 {
-    entries: [PML4E; 512]
+    pub entries: [PML4E; 512]
 }
 
 #[derive(Clone, Copy)]

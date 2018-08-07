@@ -3,11 +3,15 @@
 pub struct frame
 {
 	pub next: &'static mut frame,
-	pub me: u64,
+
 }
 
 impl frame
 {
+	pub fn address(&self) -> u64
+	{
+		unsafe { self as *const frame as u64 }
+	}
 	pub fn take(&mut self) -> &'static mut frame
 	{
 		unsafe { 
@@ -27,7 +31,7 @@ impl frame
 		{
 			myFrame.next = unsafe { &mut *(0 as *mut frame) };
 		
-			myFrame.me = PhysicalAddress;
+			
 		}
 		myFrame
 		

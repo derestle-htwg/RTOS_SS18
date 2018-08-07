@@ -2,7 +2,7 @@
 use self::LLFrameAllocator::*;
 use VMM::*;
 
-pub fn mapAddresspace(pmem: &mut frame, vmem: u64, pgtbl: &mut PML4)
+pub fn mapAddresspace(pmem: u64, vmem: u64, pgtbl: &mut PML4)
 {
 	let level1Index : usize = ((vmem >> 12) & 0x01FF) as usize;
 	let level2Index : usize = ((vmem >> 21) & 0x01FF) as usize;
@@ -60,9 +60,9 @@ pub fn mapAddresspace(pmem: &mut frame, vmem: u64, pgtbl: &mut PML4)
 		},
 		None => {}
 	}
-	let newPG: u64 = unsafe { pmem as *mut frame as u64 };
+	
 	pgLvl1.entries[level1Index].entry.data = 0;
-	pgLvl1.entries[level1Index].entry.setPA(newPG);
+	pgLvl1.entries[level1Index].entry.setPA(pmem);
 	pgLvl1.entries[level1Index].entry.setPresent(true);
 	pgLvl1.entries[level1Index].entry.setWriteable(true);
 	

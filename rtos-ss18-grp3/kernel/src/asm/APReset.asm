@@ -53,6 +53,7 @@ longmodeVector:
 	cmp	rax,0
 	je	longmodeVector
 	mov	rsp,rax
+	mov rdi,rax ; Als parameter den Stackpointer
 	mov	rax,[0xCF8]
 	jmp rax
 APStartblock_End:
